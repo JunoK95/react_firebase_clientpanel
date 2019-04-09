@@ -24,7 +24,7 @@ class Clients extends Component {
             return (
                 <div>
                     <div className="row">
-                        <div classNam="col-md-6">
+                        <div className="col-md-6">
                             <h2>
                                 {' '}
                                 <i className="fas fa-users" /> Clients{' '}
