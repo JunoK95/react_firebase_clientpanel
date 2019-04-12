@@ -9,8 +9,64 @@ import classnames from 'classnames'
 
 class ClientDetails extends Component{
     
+    state = {
+        showBalanceUpdate: false,
+        balanceUpdateAmount: ''
+    }
+
+    onChange = (event) => {
+        const {name, value} = event.target
+        this.setState({[name]:value})
+    }
+
+    onSubmit = (event) => {
+        event.preventDefault()
+        const {client, firestore} = this.props;
+        const {balanceUpdateAmount} = this.state;
+
+        const clientUpdate = {
+            balance: parseFloat(balanceUpdateAmount)
+        }
+
+        //Update Firestore
+        firestore.update({collection:'clients', doc:client.id}, clientUpdate)
+    }
+
+    onDelete = (event) => {
+        event.preventDefault()
+        const {client, firestore} = this.props;
+
+        //Update Firestore
+        firestore.delete({collection:'clients', doc:client.id})
+            .then(() => this.props.history.push('/'))
+    }
+
     render(){
         const {client}=this.props
+        const {showBalanceUpdate, balanceUpdateAmount} = this.state
+
+        let balanceForm = ''
+
+        if(showBalanceUpdate){
+            balanceForm = (
+                <form onSubmit={this.onSubmit}>
+                    <div className="input-group">
+                        <input
+                            type="text"
+                            className="form-control"
+                            name="balanceUpdateAmount"
+                            placeholder="Add New Balance"
+                            value={balanceUpdateAmount}
+                            onChange={this.onChange}
+                        />
+                        <div className="input-group-append">
+                            <input type="submit" value="Update" className="btn btn-outline-dark" />
+                        </div>
+                    </div>
+                </form>
+            )
+        } else{balanceForm = null}
+
         if(client){
             return(
                 <div>
@@ -25,7 +81,7 @@ class ClientDetails extends Component{
                                 <Link to={`/client/edit/${client.id}`} className="btn btn-dark">
                                     Edit
                                 </Link>
-                                <button className="btn btn-danger">
+                                <button className="btn btn-danger" onClick={this.onDelete}>
                                     Delete
                                 </button>
                             </div>
@@ -47,11 +103,16 @@ class ClientDetails extends Component{
                                 <div className="col-md-4 col-sm-6">
                                     <h3 className="pull-right">
                                         Balance: 
-                                        <span className={classnames({'text-danger': client.balance > 0, 'text-success': client.balance === '0'})}>
+                                        <span className={classnames({'text-danger': client.balance > 0, 'text-success': client.balance === 0})}>
                                             ${parseFloat(client.balance).toFixed(2)}
                                         </span>
+                                        <small>
+                                            <a href="#" onClick={() => this.setState({ showBalanceUpdate: !this.state.showBalanceUpdate})}>
+                                                <i className="fas fa-pencil-alt" />
+                                            </a>
+                                        </small>
                                     </h3>
-                                    {/* todo balance form*/}
+                                    {balanceForm}
                                 </div>
                             </div>
                             <hr />
